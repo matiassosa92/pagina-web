@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matías Sosa — Sonido · Arte · Educación</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0e;
+    --surface: #0d1018;
+    --border: #1a1f2e;
+    --accent: #c8f060;
+    --accent2: #4af0c8;
+    --text: #e8e4dc;
+    --muted: #6b7280;
+    --warm: #f0b860;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    opacity: 0.5;
+  }
+
+  /* Canvas background */
+  #canvas-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* Grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  section, nav, footer { position: relative; z-index: 2; }
+
+  /* NAV */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(8,10,14,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    border: 1px solid var(--accent);
+    color: var(--accent) !important;
+    padding: 0.4rem 1rem;
+  }
+  .nav-cta:hover { background: var(--accent); color: var(--bg) !important; }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 0 3rem;
+    gap: 4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-text { padding: 4rem 0; }
+  .hero-tag {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 2rem;
+    height: 1px;
+    background: var(--accent2);
+  }
+  .hero-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin-bottom: 1rem;
+  }
+  .hero-name span {
+    display: block;
+    color: var(--accent);
+  }
+  .hero-subtitle {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--warm);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+  .hero-bio {
+    font-size: 0.78rem;
+    line-height: 1.9;
+    color: #9ca3af;
+    max-width: 480px;
+    margin-bottom: 2.5rem;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 0.75rem 1.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-weight: 400;
+  }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.75rem 1.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  /* Waveform visual */
+  .hero-visual {
+    position: relative;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #waveform-canvas {
+    width: 100%;
+    height: 100%;
+  }
+  .hero-roles {
+    position: absolute;
+    bottom: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: right;
+  }
+  .role-pill {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface);
+    transition: all 0.4s;
+    animation: pillfade 0.5s ease forwards;
+    opacity: 0;
+  }
+  .role-pill:nth-child(1) { animation-delay: 0.6s; }
+  .role-pill:nth-child(2) { animation-delay: 0.8s; }
+  .role-pill:nth-child(3) { animation-delay: 1.0s; }
+  .role-pill:nth-child(4) { animation-delay: 1.2s; }
+  .role-pill:nth-child(5) { animation-delay: 1.4s; }
+  .role-pill:nth-child(6) { animation-delay: 1.6s; }
+  @keyframes pillfade {
+    to { opacity: 1; }
+  }
+  .role-pill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(200,240,96,0.05);
+  }
+
+  /* AREAS */
+  #areas {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+  }
+  .section-num {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    letter-spacing: 0.05em;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .areas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .area-card {
+    background: var(--bg);
+    padding: 2.5rem;
+    transition: background 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .area-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--accent);
+    transition: height 0.4s ease;
+  }
+  .area-card:hover::before { height: 100%; }
+  .area-card:hover { background: var(--surface); }
+  .area-icon {
+    font-size: 2rem;
+    margin-bottom: 1.25rem;
+    display: block;
+  }
+  .area-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  .area-desc {
+    font-size: 0.72rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+  .area-tags {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tag {
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border);
+    color: #4b5563;
+  }
+
+  /* PROCESS */
+  #proceso {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 5rem;
+    align-items: start;
+  }
+  .proceso-intro {}
+  .proceso-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+  .proceso-intro p {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--warm);
+    line-height: 1.7;
+  }
+  .proceso-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .proceso-item {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .proceso-item:first-child { padding-top: 0; }
+  .proceso-item:hover .proceso-num { color: var(--accent); }
+  .proceso-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--border);
+    transition: color 0.3s;
+    line-height: 1;
+  }
+  .proceso-body h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+  }
+  .proceso-body p {
+    font-size: 0.72rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+
+  /* WORKS / PROYECTOS */
+  #proyectos {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+  .work-card {
+    background: var(--bg);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: background 0.3s;
+  }
+  .work-card:hover { background: var(--surface); }
+  .work-card-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 8rem;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: opacity 0.4s;
+  }
+  .work-card:hover .work-card-bg { opacity: 0.08; }
+  .work-type {
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  .work-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  .work-desc {
+    font-size: 0.7rem;
+    line-height: 1.7;
+    color: var(--muted);
+    position: relative;
+  }
+  .work-arrow {
+    position: absolute;
+    top: 2rem; right: 2rem;
+    color: var(--border);
+    font-size: 1.5rem;
+    transition: all 0.3s;
+  }
+  .work-card:hover .work-arrow { color: var(--accent); transform: translate(4px, -4px); }
+
+  /* SERVICES */
+  #servicios {
+    padding: 6rem 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .services-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  .services-table tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .services-table tr:hover { background: var(--surface); }
+  .services-table td {
+    padding: 1.25rem 1rem;
+    font-size: 0.73rem;
+    vertical-align: middle;
+  }
+  .service-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    width: 30%;
+  }
+  .service-desc { color: var(--muted); line-height: 1.7; width: 50%; }
+  .service-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(200,240,96,0.08);
+    border: 1px solid rgba(200,240,96,0.2);
+    color: var(--accent);
+  }
+
+  /* CONTACT */
+  #contacto {
+    padding: 6rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .contact-left h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 5vw, 5rem);
+    line-height: 0.9;
+    letter-spacing: 0.03em;
+    margin-bottom: 1.5rem;
+  }
+  .contact-left h2 em {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    color: var(--accent);
+    display: block;
+  }
+  .contact-left p {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 380px;
+    margin-bottom: 2rem;
+  }
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .contact-link:hover { color: var(--accent); padding-left: 0.5rem; border-color: var(--accent); }
+  .contact-link-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    min-width: 80px;
+  }
+
+  /* Contact form */
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .form-field label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .form-field input,
+  .form-field textarea,
+  .form-field select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    outline: none;
+    transition: border-color 0.3s;
+    resize: none;
+  }
+  .form-field input:focus,
+  .form-field textarea:focus,
+  .form-field select:focus { border-color: var(--accent); }
+  .form-field textarea { height: 120px; }
+  .form-field select option { background: var(--surface); }
+  .btn-submit {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: none;
+    cursor: none;
+    transition: all 0.3s;
+    font-weight: 400;
+    margin-top: 0.5rem;
+  }
+  .btn-submit:hover { background: var(--accent2); }
+
+  /* FOOTER */
+  footer {
+    padding: 2rem 3rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer p { font-size: 0.62rem; color: #374151; letter-spacing: 0.1em; }
+  .footer-accent { color: var(--accent); }
+
+  /* Animations */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s ease;
+  }
+  .fade-up.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #hero { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+    .hero-visual { display: none; }
+    #areas { padding: 4rem 1.5rem; }
+    .areas-grid { grid-template-columns: 1fr; }
+    #proceso { grid-template-columns: 1fr; padding: 4rem 1.5rem; gap: 3rem; }
+    .works-grid { grid-template-columns: 1fr; }
+    #proyectos, #servicios, #contacto { padding: 4rem 1.5rem; }
+    #contacto { grid-template-columns: 1fr; gap: 3rem; }
+    nav { padding: 1.25rem 1.5rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<canvas id="canvas-bg"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">MS</a>
+  <ul class="nav-links">
+    <li><a href="#areas">Áreas</a></li>
+    <li><a href="#proyectos">Proyectos</a></li>
+    <li><a href="#servicios">Servicios</a></li>
+    <li><a href="#contacto" class="nav-cta">Contacto</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-text">
+    <div class="hero-tag">Buenos Aires, Argentina</div>
+    <h1 class="hero-name">
+      Matías<span>Sosa</span>
+    </h1>
+    <p class="hero-subtitle">Arte · Tecnología · Educación</p>
+    <p class="hero-bio">
+      Docente de Música y Arte, productor musical, técnico de sonido y artista interdisciplinario. 
+      Su práctica se desarrolla en la convergencia entre el arte, la tecnología y la educación, 
+      explorando las posibilidades creativas del sonido, la imagen y los medios digitales.
+    </p>
+    <div class="hero-ctas">
+      <a href="#proyectos" class="btn-primary">Ver proyectos</a>
+      <a href="#contacto" class="btn-ghost">Trabajemos juntos</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <canvas id="waveform-canvas"></canvas>
+    <div class="hero-roles">
+      <div class="role-pill">Docente de Música y Arte</div>
+      <div class="role-pill">Productor Musical</div>
+      <div class="role-pill">Técnico de Sonido</div>
+      <div class="role-pill">Ing. de Mezcla y Master</div>
+      <div class="role-pill">Síntesis Sonora y Visual</div>
+      <div class="role-pill">Artista Interdisciplinario</div>
+    </div>
+  </div>
+</section>
+
+<!-- ÁREAS -->
+<section id="areas">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Áreas de Práctica</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="areas-grid">
+    <div class="area-card fade-up">
+      <span class="area-icon">🎛️</span>
+      <h3 class="area-title">Producción Musical</h3>
+      <p class="area-desc">Composición, arreglos y producción integral de proyectos musicales. Desde la idea hasta el producto final, con profundo conocimiento de géneros y estéticas sonoras diversas.</p>
+      <div class="area-tags">
+        <span class="tag">DAW</span>
+        <span class="tag">Composición</span>
+        <span class="tag">Arreglos</span>
+        <span class="tag">Sound Design</span>
+      </div>
+    </div>
+    <div class="area-card fade-up">
+      <span class="area-icon">🎚️</span>
+      <h3 class="area-title">Mezcla & Mastering</h3>
+      <p class="area-desc">Ingeniería de mezcla y masterización orientada a obtener el balance, la espacialidad y la dinámica que cada proyecto requiere. Trabajo en estudio y remoto.</p>
+      <div class="area-tags">
+        <span class="tag">Mixing</span>
+        <span class="tag">Mastering</span>
+        <span class="tag">Stem Mixing</span>
+        <span class="tag">Online</span>
+      </div>
+    </div>
+    <div class="area-card fade-up">
+      <span class="area-icon">🔊</span>
+      <h3 class="area-title">Técnico de Sonido</h3>
+      <p class="area-desc">Operación y diseño de sonido en vivo para espectáculos, eventos, teatro y música. Experiencia en diferentes formatos y escalas de producción.</p>
+      <div class="area-tags">
+        <span class="tag">Live Sound</span>
+        <span class="tag">FOH</span>
+        <span class="tag">Teatro</span>
+        <span class="tag">Monitoreo</span>
+      </div>
+    </div>
+    <div class="area-card fade-up">
+      <span class="area-icon">🎓</span>
+      <h3 class="area-title">Educación</h3>
+      <p class="area-desc">Docencia de Música y Arte con enfoque en la integración de tecnología como lenguaje expresivo. Talleres, cursos y formación pedagógica innovadora.</p>
+      <div class="area-tags">
+        <span class="tag">Pedagogía Musical</span>
+        <span class="tag">Talleres</span>
+        <span class="tag">Arte-Educación</span>
+        <span class="tag">Tecnología</span>
+      </div>
+    </div>
+    <div class="area-card fade-up">
+      <span class="area-icon">〰️</span>
+      <h3 class="area-title">Síntesis Sonora</h3>
+      <p class="area-desc">Exploración de la síntesis como práctica creativa y artística: síntesis sustractiva, FM, granular, modular. El timbre como material compositivo.</p>
+      <div class="area-tags">
+        <span class="tag">Síntesis FM</span>
+        <span class="tag">Granular</span>
+        <span class="tag">Modular</span>
+        <span class="tag">Patches</span>
+      </div>
+    </div>
+    <div class="area-card fade-up">
+      <span class="area-icon">◈</span>
+      <h3 class="area-title">Arte Interdisciplinario</h3>
+      <p class="area-desc">Investigación en la intersección del sonido, la imagen y los medios digitales. Programación creativa, visuales en tiempo real y experiencias interactivas.</p>
+      <div class="area-tags">
+        <span class="tag">AV Art</span>
+        <span class="tag">Live Visuals</span>
+        <span class="tag">Interactivo</span>
+        <span class="tag">Digital Media</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESO -->
+<section id="proceso">
+  <div class="proceso-intro">
+    <h2 class="proceso-title">Cómo<br>Trabajo</h2>
+    <p>La tecnología no es solo una herramienta — es un lenguaje capaz de ampliar las formas de expresión, aprendizaje y construcción de conocimiento.</p>
+  </div>
+  <div class="proceso-list">
+    <div class="proceso-item fade-up">
+      <span class="proceso-num">01</span>
+      <div class="proceso-body">
+        <h3>Escuchar y Entender</h3>
+        <p>Todo proyecto comienza por entender su naturaleza, sus necesidades y el contexto en el que va a existir. La escucha activa define el camino.</p>
+      </div>
+    </div>
+    <div class="proceso-item fade-up">
+      <span class="proceso-num">02</span>
+      <div class="proceso-body">
+        <h3>Experimentar y Crear</h3>
+        <p>La experimentación es parte del proceso creativo. Explorar posibilidades antes de establecer una dirección definida, abriendo el campo de lo posible.</p>
+      </div>
+    </div>
+    <div class="proceso-item fade-up">
+      <span class="proceso-num">03</span>
+      <div class="proceso-body">
+        <h3>Refinar y Construir</h3>
+        <p>Una vez encontrada la dirección, el trabajo minucioso de refinamiento y construcción asegura que cada detalle contribuya al todo.</p>
+      </div>
+    </div>
+    <div class="proceso-item fade-up">
+      <span class="proceso-num">04</span>
+      <div class="proceso-body">
+        <h3>Compartir y Transferir</h3>
+        <p>El conocimiento y el proceso tienen valor en sí mismos. Compartirlo — a través de la educación, la colaboración o la presentación pública — es parte fundamental del trabajo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROYECTOS -->
+<section id="proyectos">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Proyectos</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="works-grid">
+    <div class="work-card fade-up">
+      <span class="work-card-bg">01</span>
+      <span class="work-type">Producción Musical</span>
+      <h3 class="work-title">Producciones en Estudio</h3>
+      <p class="work-desc">Proyectos musicales producidos íntegramente: composición, arreglos, grabación, mezcla y mastering.</p>
+      <span class="work-arrow">↗</span>
+    </div>
+    <div class="work-card fade-up">
+      <span class="work-card-bg">02</span>
+      <span class="work-type">Sonido en Vivo</span>
+      <h3 class="work-title">Espectáculos & Eventos</h3>
+      <p class="work-desc">Operación de sonido para shows, recitales, teatro y eventos culturales de distintas escalas.</p>
+      <span class="work-arrow">↗</span>
+    </div>
+    <div class="work-card fade-up">
+      <span class="work-card-bg">03</span>
+      <span class="work-type">Arte Sonoro</span>
+      <h3 class="work-title">Síntesis & Exploración</h3>
+      <p class="work-desc">Piezas y experimentos en síntesis sonora y visual, explorando los límites del timbre y la imagen.</p>
+      <span class="work-arrow">↗</span>
+    </div>
+    <div class="work-card fade-up">
+      <span class="work-card-bg">04</span>
+      <span class="work-type">Educación</span>
+      <h3 class="work-title">Talleres & Cursos</h3>
+      <p class="work-desc">Propuestas pedagógicas que integran música, arte y tecnología en contextos formales y no formales.</p>
+      <span class="work-arrow">↗</span>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICIOS -->
+<section id="servicios">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Servicios</h2>
+    <div class="section-line"></div>
+  </div>
+  <table class="services-table">
+    <tbody>
+      <tr class="fade-up">
+        <td class="service-name">Producción Musical</td>
+        <td class="service-desc">Producción integral de proyectos musicales: composición, arreglos, instrumentación y dirección creativa.</td>
+        <td><span class="service-badge">Disponible</span></td>
+      </tr>
+      <tr class="fade-up">
+        <td class="service-name">Mezcla Profesional</td>
+        <td class="service-desc">Mezcla de proyectos propios o ajenos. Trabajo en estudio y remoto, stems o sesión completa.</td>
+        <td><span class="service-badge">Disponible</span></td>
+      </tr>
+      <tr class="fade-up">
+        <td class="service-name">Masterización</td>
+        <td class="service-desc">Masterización para distribución digital, vinilo o broadcast. Revisión y corrección de dinámica, espectro y loudness.</td>
+        <td><span class="service-badge">Disponible</span></td>
+      </tr>
+      <tr class="fade-up">
+        <td class="service-name">Sonido en Vivo</td>
+        <td class="service-desc">Operación técnica para espectáculos, recitales y eventos culturales. FOH, monitor y diseño de sonido.</td>
+        <td><span class="service-badge">Disponible</span></td>
+      </tr>
+      <tr class="fade-up">
+        <td class="service-name">Talleres & Docencia</td>
+        <td class="service-desc">Diseño e implementación de talleres sobre producción musical, sonido, síntesis y arte digital para instituciones y particulares.</td>
+        <td><span class="service-badge">Disponible</span></td>
+      </tr>
+      <tr class="fade-up">
+        <td class="service-name">Proyectos AV & Arte</td>
+        <td class="service-desc">Colaboración en proyectos interdisciplinarios: instalaciones, performances, diseño sonoro para audiovisual.</td>
+        <td><span class="service-badge">Consultar</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto">
+  <div class="contact-left">
+    <h2>Hablemos<em>del proyecto.</em></h2>
+    <p>Si tenés un proyecto en mente — musical, educativo, artístico o lo que sea — escribime. Me interesa colaborar con personas y proyectos que quieran hacer algo diferente.</p>
+    <div class="contact-links">
+      <a href="mailto:jmatiassosa92@gmail.com" class="contact-link">
+        <span class="contact-link-label">Email</span>
+        jmatiassosa92@gmail.com
+      </a>
+      <a href="https://www.instagram.com/matisxsa/" target="_blank" class="contact-link">
+        <span class="contact-link-label">Instagram</span>
+        @matisxsa
+      </a>
+      <a href="https://soundcloud.com/matisxsa" target="_blank" class="contact-link">
+        <span class="contact-link-label">SoundCloud</span>
+        soundcloud.com/matisxsa
+      </a>
+      <a href="#" class="contact-link">
+        <span class="contact-link-label">LinkedIn</span>
+        linkedin.com/in/matias-sosa
+      </a>
+    </div>
+  </div>
+  <div class="contact-form">
+    <div class="form-field">
+      <label>Nombre</label>
+      <input type="text" placeholder="Tu nombre">
+    </div>
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" placeholder="tu@email.com">
+    </div>
+    <div class="form-field">
+      <label>¿Qué necesitás?</label>
+      <select>
+        <option value="">Seleccioná una opción</option>
+        <option>Producción Musical</option>
+        <option>Mezcla / Mastering</option>
+        <option>Sonido en Vivo</option>
+        <option>Docencia / Taller</option>
+        <option>Proyecto Artístico / AV</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Mensaje</label>
+      <textarea placeholder="Contame de tu proyecto..."></textarea>
+    </div>
+    <button class="btn-submit">Enviar mensaje →</button>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 <span class="footer-accent">Matías Sosa</span> — Todos los derechos reservados</p>
+  <p>Buenos Aires, Argentina</p>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mouseX = 0, mouseY = 0;
+  let ringX = 0, ringY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
+  });
+
+  function animateRing() {
+    ringX += (mouseX - ringX - 16) * 0.12;
+    ringY += (mouseY - ringY - 16) * 0.12;
+    ring.style.transform = `translate(${ringX}px, ${ringY}px)`;
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.querySelectorAll('a, button, .area-card, .work-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform += ' scale(2)';
+      ring.style.width = '48px';
+      ring.style.height = '48px';
+      ring.style.opacity = '0.8';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '32px';
+      ring.style.height = '32px';
+      ring.style.opacity = '0.5';
+    });
+  });
+
+  // Animated background canvas
+  const bgCanvas = document.getElementById('canvas-bg');
+  const bgCtx = bgCanvas.getContext('2d');
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * bgCanvas.width,
+      y: Math.random() * bgCanvas.height,
+      r: Math.random() * 1.5 + 0.2,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      color: Math.random() > 0.7 ? '#c8f060' : (Math.random() > 0.5 ? '#4af0c8' : '#f0b860')
+    });
+  }
+
+  function drawBg() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    // Grid lines
+    bgCtx.strokeStyle = '#1a1f2e';
+    bgCtx.lineWidth = 0.5;
+    for (let x = 0; x < bgCanvas.width; x += 80) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(x, 0);
+      bgCtx.lineTo(x, bgCanvas.height);
+      bgCtx.stroke();
+    }
+    for (let y = 0; y < bgCanvas.height; y += 80) {
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, y);
+      bgCtx.lineTo(bgCanvas.width, y);
+      bgCtx.stroke();
+    }
+    // Particles
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = bgCanvas.width;
+      if (p.x > bgCanvas.width) p.x = 0;
+      if (p.y < 0) p.y = bgCanvas.height;
+      if (p.y > bgCanvas.height) p.y = 0;
+      bgCtx.beginPath();
+      bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      bgCtx.fillStyle = p.color;
+      bgCtx.fill();
+    });
+    requestAnimationFrame(drawBg);
+  }
+  drawBg();
+
+  // Waveform canvas
+  const wCanvas = document.getElementById('waveform-canvas');
+  if (wCanvas) {
+    const wCtx = wCanvas.getContext('2d');
+    let t = 0;
+    function resizeWave() {
+      const rect = wCanvas.parentElement.getBoundingClientRect();
+      wCanvas.width = rect.width;
+      wCanvas.height = rect.height;
+    }
+    resizeWave();
+
+    function drawWave() {
+      wCtx.clearRect(0, 0, wCanvas.width, wCanvas.height);
+      const cx = wCanvas.width / 2;
+      const cy = wCanvas.height / 2;
+
+      // Multiple wave layers
+      const waves = [
+        { amp: 80, freq: 0.015, speed: 0.02, color: 'rgba(200,240,96,0.6)', width: 1.5 },
+        { amp: 50, freq: 0.025, speed: 0.035, color: 'rgba(74,240,200,0.4)', width: 1 },
+        { amp: 30, freq: 0.04, speed: 0.05, color: 'rgba(240,184,96,0.3)', width: 0.8 },
+      ];
+
+      waves.forEach(w => {
+        wCtx.beginPath();
+        wCtx.strokeStyle = w.color;
+        wCtx.lineWidth = w.width;
+        for (let x = 0; x < wCanvas.width; x++) {
+          const y = cy + Math.sin((x * w.freq) + (t * w.speed)) * w.amp
+                      * Math.sin(x * 0.008 + t * 0.01);
+          if (x === 0) wCtx.moveTo(x, y);
+          else wCtx.lineTo(x, y);
+        }
+        wCtx.stroke();
+      });
+
+      // Center line
+      wCtx.beginPath();
+      wCtx.strokeStyle = 'rgba(26,31,46,0.8)';
+      wCtx.lineWidth = 1;
+      wCtx.moveTo(0, cy);
+      wCtx.lineTo(wCanvas.width, cy);
+      wCtx.stroke();
+
+      // Freq bars at bottom
+      const bars = 40;
+      const barW = wCanvas.width / bars;
+      for (let i = 0; i < bars; i++) {
+        const h = (Math.sin(i * 0.3 + t * 0.04) * 0.5 + 0.5) * 60 + 5;
+        const alpha = 0.15 + (Math.sin(i * 0.5 + t * 0.06) * 0.5 + 0.5) * 0.3;
+        wCtx.fillStyle = `rgba(200,240,96,${alpha})`;
+        wCtx.fillRect(i * barW + 1, wCanvas.height - h, barW - 2, h);
+      }
+
+      t++;
+      requestAnimationFrame(drawWave);
+    }
+    drawWave();
+    window.addEventListener('resize', resizeWave);
+  }
+
+  // Intersection observer for fade-up animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  window.addEventListener('resize', () => {
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+  });
+</script>
+</body>
+</html>
