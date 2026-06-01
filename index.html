@@ -246,7 +246,64 @@
     color: var(--accent);
     background: rgba(200,240,96,0.05);
   }
-
+/* SOBRE MÍ */
+#sobre-mi {
+  padding: 6rem 3rem;
+  border-bottom: 1px solid var(--border);
+}
+.sobre-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 5rem;
+  align-items: center;
+}
+.sobre-img-wrap {
+  position: relative;
+}
+.sobre-img-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.2;
+}
+.sobre-img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,240,96,0.08);
+}
+.sobre-img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  filter: grayscale(40%) brightness(0.85);
+  position: relative;
+  z-index: 1;
+  border-radius: 50%;
+  mask-image: radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%);
+  -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 80%);
+}
+.sobre-quote {
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--warm);
+  margin-bottom: 1.5rem;
+}
+.sobre-bio {
+  font-size: 0.75rem;
+  line-height: 1.9;
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+@media (max-width: 900px) {
+  .sobre-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+}
   /* AREAS */
   #areas {
     padding: 6rem 3rem;
@@ -683,7 +740,25 @@
     </div>
   </div>
 </section>
-
+<!-- SOBRE MÍ -->
+<section id="sobre-mi">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <h2 class="section-title">Sobre Mí</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="sobre-grid">
+    <div class="sobre-img-wrap">
+      <img src="images/maticv.png" alt="Matías Sosa" class="sobre-img">
+    </div>
+    <div class="sobre-text">
+      <p class="sobre-quote">Arte · Tecnología · Educación</p>
+      <p class="sobre-bio">Matías Sosa es docente de Música y Arte, productor musical, técnico de sonido y artista interdisciplinario. Su práctica se desarrolla en la convergencia entre el arte, la tecnología y la educación, explorando las posibilidades creativas del sonido, la imagen y los medios digitales.</p>
+      <p class="sobre-bio">A través de la producción musical, la síntesis sonora, las artes audiovisuales, la programación creativa y el diseño de experiencias interactivas, investiga nuevas formas de creación, percepción y participación.</p>
+      <p class="sobre-bio">Su trabajo combina la experimentación artística con la práctica pedagógica, entendiendo la tecnología no solo como una herramienta, sino como un lenguaje capaz de ampliar las formas de expresión, aprendizaje y construcción de conocimiento.</p>
+    </div>
+  </div>
+</section>
 <!-- ÁREAS -->
 <section id="areas">
   <div class="section-header">
